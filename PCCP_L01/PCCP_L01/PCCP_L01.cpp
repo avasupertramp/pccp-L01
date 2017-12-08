@@ -40,6 +40,10 @@ int main(int argc, char* argv[])
 			}else if (argument == "-t") {
 				maxThreads = stoi(argv[i + 1]);
 				i++;
+			}
+			else if (argument == "-s") {
+				path = argv[i + 1];
+				i++;
 			}else if (argument == "-h") {
 				printHelp();
 				break;
