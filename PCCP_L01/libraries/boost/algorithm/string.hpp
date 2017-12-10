@@ -22,7 +22,7 @@
 //#include <boost/algorithm/string/find.hpp>
 #include <boost/algorithm/string/split.hpp>
 //#include <boost/algorithm/string/join.hpp>
-//#include <boost/algorithm/string/replace.hpp>
+#include <boost/algorithm/string/replace.hpp>
 //#include <boost/algorithm/string/erase.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/find_iterator.hpp>

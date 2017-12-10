@@ -6,7 +6,9 @@
 #include <conio.h>
 #include <time.h>
 #include <thread>
+#include <boost\filesystem\path.hpp>
 #include "Directories.h"
+#include "CalculateBits.h"
 using namespace std;
 
 
@@ -19,22 +21,22 @@ void printHelp() {
 int main(int argc, char* argv[])
 {
 	int depth = 0;
-	int maxThreads = 0;
 	bool printProcesTime = false;
 	bool extendedOutput = false;
 	bool waitBeforeTerminate = false;
+	unsigned int maxThreads = 0;
+	unsigned long resultOnes=0;
+	unsigned long resultZeros = 0;
 	vector<string> path;
 	vector<string> filter;
 	clock_t processTime;
 
-	unsigned concurentThreadsSupported = std::thread::hardware_concurrency();	//get max supported threads of the machine
-
-
 	if (argc < 2) {
-		cout << "To less arguemnts" << endl;
+		printHelp();
 		return 0;
 	}
 
+	//handle input arguments
 	for (int i = 1; i < argc; i++) {
 		try {
 		string argument = argv[i];
@@ -86,20 +88,55 @@ int main(int argc, char* argv[])
 		}
 
 		}
+
+	//calc max Threads
+	unsigned concurentThreadsSupported = thread::hardware_concurrency();	//get max supported threads of the machine
+	if (maxThreads == 0 || maxThreads > concurentThreadsSupported) {
+		maxThreads = concurentThreadsSupported;
+	}
+
+	//start measuring process time if wanted
 	if (printProcesTime) {
 		processTime = clock();
 	}
 
+	//place code here to measure the time
+	Directories directory;
+	vector<boost::filesystem::path> pathes = directory.generateFileTree(path, filter, depth);
 
-	Directories temp;
-	temp.generateFileTree(path,filter,depth);
+	//vector <vector<boost::filesystem::path>> subPathes;
+	//for (int i = 0; i < maxThreads; i++) {
+	//	subPathes.push_back(pathes.begin(),pathes.end());
+	//}
+	
+
+	//start Threads
+	vector<unique_ptr<CalculateBits>> runners;
+	for (size_t i = 0; i < maxThreads; ++i) {
+		runners.emplace_back(new CalculateBits);
+	}
 
 
+	vector<thread> threads;
+	for (const auto& r : runners) {
+		threads.emplace_back(&CalculateBits::calcBit, r.get(),pathes, &resultZeros, &resultOnes);
+	}
+
+	for (auto& t : threads) {
+		t.join();
+	}
+
+	//print counted files
+	printf("\nCounted Zeros %lu \nCounted Ones %lu\n",resultZeros, resultOnes);
+
+	//print process time
 	if (printProcesTime) {
 		processTime = clock() - processTime;
 		double time_taken = ((double)processTime) / CLOCKS_PER_SEC; // in seconds
-		printf("\n The process took %f seconds to execute \n\n", time_taken);
+		printf("\nThe process took %f seconds to execute \n\n", time_taken);
 	}
+
+	//wait for input before exit
 	if (waitBeforeTerminate) {
 		cout << "Press any key to exit...";
 		_getch();

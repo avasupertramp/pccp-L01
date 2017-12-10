@@ -27,6 +27,9 @@
     <ClInclude Include="Directories.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
+    <ClInclude Include="CalculateBits.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -36,6 +39,9 @@
       <Filter>Quelldateien</Filter>
     </ClCompile>
     <ClCompile Include="Directories.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="CalculateBits.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
   </ItemGroup>
