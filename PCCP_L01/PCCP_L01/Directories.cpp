@@ -1,39 +1,42 @@
 #include "Directories.h"
 
-Directories::Directories()
-{
-}
 
+Directories::Directories(unsigned int maxThreads, uintmax_t* resultOnes, uintmax_t* sumSize)
+{
+	this->maxThreads = maxThreads;
+	this->resultOnes = resultOnes;
+	this->resultSize = sumSize;
+	calculateBits.setMaxThreads(maxThreads);
+}
 
 Directories::~Directories()
 {
 }
 
-vector<fs::path> Directories::generateFileTree(vector<string> pathes, vector<string> filter, int maxDepth)
+void Directories::generateFileTree(vector<string> pathes, vector<string> filter, int maxDepth)
 {
 	vector<regex> filters;
-	vector<fs::path> files;		//pathes to files
 
 	splitFilters(filter,&filters);
 
 	for (auto const& _path : pathes) {		//iterate over all pathes
 		fs::path path(_path);
 		if (filters.size() > 0) {
-			getFiles(path, &files, filters, maxDepth);	//get all files
+			getFiles(path, filters, maxDepth);	//get all files
 		}
 		else {
-			getFiles(path, &files, maxDepth);	//get all files
+			getFiles(path, maxDepth);	//get all files
 		}
 		
 	}
 
+	calculateBits.joinThreads();
 	//for (auto const& value : files) {
 	//	cout << value << endl;
 	//}
-	return files;
 }
 
-void Directories::getFiles(fs::path path, vector<fs::path> *files,int maxDepth) {
+void Directories::getFiles(fs::path path, int maxDepth) {
 	maxDepth--;
 	fs::directory_iterator end_iter;
 
@@ -43,11 +46,11 @@ void Directories::getFiles(fs::path path, vector<fs::path> *files,int maxDepth) 
 		{
 			if (fs::is_regular_file(dir_iter->status()))
 			{
-				files->push_back(dir_iter->path());
+				calculateBits.calcBit(dir_iter->path(), this->resultOnes, this->resultSize);
 			}
 			else if (fs::is_directory(dir_iter->status())) {
 				if (maxDepth != -1) {
-					getFiles(dir_iter->path(), files, maxDepth);
+					getFiles(dir_iter->path(), maxDepth);
 				}
 			}
 		}
@@ -57,7 +60,7 @@ void Directories::getFiles(fs::path path, vector<fs::path> *files,int maxDepth) 
 	}
 }
 
-void Directories::getFiles(fs::path path, vector<fs::path> *files, vector<regex> filters, int maxDepth) {
+void Directories::getFiles(fs::path path, vector<regex> filters, int maxDepth) {
 	maxDepth--;
 	fs::directory_iterator end_iter;
 
@@ -70,14 +73,14 @@ void Directories::getFiles(fs::path path, vector<fs::path> *files, vector<regex>
 				for (auto const& temp : filters) {
 					string ha = dir_iter->path().string();
 					if (regex_match(ha, temp)) {
-						files->push_back(dir_iter->path());
+						calculateBits.calcBit(dir_iter->path(), this->resultOnes, this->resultSize);
 						break;
 					}
 				}
 			}
 			else if (fs::is_directory(dir_iter->status())) {
 				if (maxDepth != -1) {
-					getFiles(dir_iter->path(), files, filters, maxDepth);
+					getFiles(dir_iter->path(), filters, maxDepth);
 				}
 			}
 		}

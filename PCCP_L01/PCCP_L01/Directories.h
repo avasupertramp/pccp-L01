@@ -6,6 +6,7 @@
 #include <boost\filesystem\path.hpp>
 #include <boost\filesystem\operations.hpp>
 #include <boost\algorithm\string.hpp>
+#include "CalculateBits.h"
 
 using namespace std;
 namespace fs = boost::filesystem;
@@ -13,13 +14,17 @@ namespace fs = boost::filesystem;
 class Directories
 {
 public:
-	Directories();
+	Directories(unsigned int maxThreads, uintmax_t* resultOnes, uintmax_t* resultSize);
 	~Directories();
-	vector<fs::path> generateFileTree(vector<string> pathes, vector<string> filter, int maxDepth);
+	void generateFileTree(vector<string> pathes, vector<string> filter, int maxDepth);
 
 private:
-	void getFiles(fs::path path, vector<fs::path> *files, int maxDepth);
-	void getFiles(fs::path path, vector<fs::path> *files, vector<regex> filters, int maxDepth);
+	unsigned int maxThreads;
+	uintmax_t* resultOnes;
+	uintmax_t* resultSize;
+	CalculateBits calculateBits;
+	void getFiles(fs::path path, int maxDepth);
+	void getFiles(fs::path path, vector<regex> filters, int maxDepth);
 	void splitFilters(vector<string> filters, vector<regex> *returnValue);
 };
 

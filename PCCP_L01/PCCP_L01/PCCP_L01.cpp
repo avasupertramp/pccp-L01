@@ -8,7 +8,6 @@
 #include <thread>
 #include <boost\filesystem\path.hpp>
 #include "Directories.h"
-#include "CalculateBits.h"
 using namespace std;
 
 
@@ -25,8 +24,9 @@ int main(int argc, char* argv[])
 	bool extendedOutput = false;
 	bool waitBeforeTerminate = false;
 	unsigned int maxThreads = 0;
-	unsigned long resultOnes=0;
-	unsigned long resultZeros = 0;
+	uintmax_t resultOnes=0;
+	uintmax_t resultZeros = 0;
+	uintmax_t sumSize = 0;
 	vector<string> path;
 	vector<string> filter;
 	clock_t processTime;
@@ -101,8 +101,8 @@ int main(int argc, char* argv[])
 	}
 
 	//place code here to measure the time
-	Directories directory;
-	vector<boost::filesystem::path> pathes = directory.generateFileTree(path, filter, depth);
+	Directories directory(maxThreads, &resultOnes, &sumSize);
+	directory.generateFileTree(path, filter, depth);
 
 	//vector <vector<boost::filesystem::path>> subPathes;
 	//for (int i = 0; i < maxThreads; i++) {
@@ -110,24 +110,28 @@ int main(int argc, char* argv[])
 	//}
 	
 
-	//start Threads
-	vector<unique_ptr<CalculateBits>> runners;
-	for (size_t i = 0; i < maxThreads; ++i) {
-		runners.emplace_back(new CalculateBits);
-	}
+	//CalculateBits te;
+	//te.calcBit(pathes, &resultOnes, &sumSize);
+
+	////start Threads
+	//vector<unique_ptr<CalculateBits>> runners;
+	//for (size_t i = 0; i < maxThreads; ++i) {
+	//	runners.emplace_back(new CalculateBits);
+	//}
 
 
-	vector<thread> threads;
-	for (const auto& r : runners) {
-		threads.emplace_back(&CalculateBits::calcBit, r.get(),pathes, &resultZeros, &resultOnes);
-	}
+	//vector<thread> threads;
+	//for (const auto& r : runners) {
+	//	threads.emplace_back(&CalculateBits::calcBit, r.get(),pathes, &resultZeros, &resultOnes);
+	//}
 
-	for (auto& t : threads) {
-		t.join();
-	}
+	//for (auto& t : threads) {
+	//	t.join();
+	//}
 
 	//print counted files
-	printf("\nCounted Zeros %lu \nCounted Ones %lu\n",resultZeros, resultOnes);
+	resultZeros = sumSize * 8 - resultOnes;
+	printf("\nCounted Zeros %lu \nCounted Ones %lu\nTotal File size in byte %lu\n",resultZeros, resultOnes, sumSize);
 
 	//print process time
 	if (printProcesTime) {
