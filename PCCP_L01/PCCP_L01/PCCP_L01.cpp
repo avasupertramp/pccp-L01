@@ -12,8 +12,16 @@ using namespace std;
 
 
 void printHelp() {
-	cout << "help:" << endl;
-	cout << "TODO implement" << endl;
+	cout << "cntFileBits.exe [-r[n]] [-f FileFilter] [-t maxThreads] -[h] [-v] -[w] [-p] [-s] path" << endl;
+	cout << "options:" << endl;
+	cout << "    -r[n]\tactivates the the recursion in folders with n a max depth can be set" << endl;
+	cout << "    -f FileFilter\tactivates a filter for files (e.g *.img)" << endl;
+	cout << "    -t maxThreads\tsets the max number of threads" << endl;
+	cout << "    -h \tprints help" << endl;
+	cout << "    -v \tactivate additional outputs" << endl;
+	cout << "    -w \twait before ending the programm for key press" << endl;
+	cout << "    -s path \tset one or more path to execute the programm" << endl;
+	cout << "    -p \tshow processing time" << endl;
 }
 
 
@@ -80,7 +88,6 @@ int main(int argc, char* argv[])
 				else {
 					cout << "wrong argument: " << argument << endl;
 				}
-				
 			}
 		}
 		catch (exception e) {

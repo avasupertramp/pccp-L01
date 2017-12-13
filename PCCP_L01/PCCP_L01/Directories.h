@@ -6,6 +6,7 @@
 #include <boost\filesystem\path.hpp>
 #include <boost\filesystem\operations.hpp>
 #include <boost\algorithm\string.hpp>
+#include <boost\iostreams\device\mapped_file.hpp>
 #include "CalculateBits.h"
 
 using namespace std;

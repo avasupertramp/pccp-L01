@@ -42,21 +42,29 @@ void Directories::getFiles(fs::path path, int maxDepth) {
 
 	if (fs::exists(path) && fs::is_directory(path))
 	{
-		for (fs::directory_iterator dir_iter(path); dir_iter != end_iter; ++dir_iter)
-		{
-			if (fs::is_regular_file(dir_iter->status()))
+		try {
+			for (fs::directory_iterator dir_iter(path); dir_iter != end_iter; ++dir_iter)
 			{
-				calculateBits.calcBit(dir_iter->path(), this->resultOnes, this->resultSize);
-			}
-			else if (fs::is_directory(dir_iter->status())) {
-				if (maxDepth != -1) {
-					getFiles(dir_iter->path(), maxDepth);
+			
+				if (fs::is_regular_file(dir_iter->status()))
+				{
+					boost::iostreams::mapped_file_source file;
+					file.open(dir_iter->path());
+					calculateBits.calcBit(&file, this->resultOnes, this->resultSize);
+				}
+				else if (fs::is_directory(dir_iter->status())) {
+					if (maxDepth != -1) {
+						getFiles( dir_iter->path(), maxDepth);
+					}
 				}
 			}
 		}
+		catch (exception e) {
+			fprintf(stderr, "Error while Iterating over path %s\n", path.string().c_str());
+		}
 	}
 	else {
-		fprintf(stderr, "Error path %s does not exist\n", path.string());
+		fprintf(stderr, "Error path %s does not exist\n", path.string().c_str());
 	}
 }
 
@@ -73,7 +81,9 @@ void Directories::getFiles(fs::path path, vector<regex> filters, int maxDepth) {
 				for (auto const& temp : filters) {
 					string ha = dir_iter->path().string();
 					if (regex_match(ha, temp)) {
-						calculateBits.calcBit(dir_iter->path(), this->resultOnes, this->resultSize);
+						boost::iostreams::mapped_file_source file;
+						file.open(dir_iter->path());
+						calculateBits.calcBit(&file, this->resultOnes, this->resultSize);
 						break;
 					}
 				}
@@ -86,7 +96,7 @@ void Directories::getFiles(fs::path path, vector<regex> filters, int maxDepth) {
 		}
 	}
 	else {
-		fprintf(stderr, "Error path %s does not exist\n", path.string());
+		fprintf(stderr, "Error path %s does not exist\n", path.string().c_str());
 	}
 }
 
